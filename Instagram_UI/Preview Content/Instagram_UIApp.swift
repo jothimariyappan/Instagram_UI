@@ -11,7 +11,7 @@ import SwiftUI
 struct Instagram_UIApp: App {
     var body: some Scene {
         WindowGroup {
-            IGAuthorization()
+            IG_Homescreen()
         }
     }
 }

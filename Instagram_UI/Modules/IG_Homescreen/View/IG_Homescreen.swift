@@ -9,12 +9,13 @@
 import SwiftUI
 
 struct IG_Homescreen: View {
-    @StateObject var userviewmodel = UserViewModel()
+    @StateObject var userViewModel = UserViewModel()
     
     let adaptive: [GridItem] = [GridItem()]
     
     var body: some View {
         NavigationStack {
+            
             ZStack {
                 Color.white.ignoresSafeArea() // Background color
                
@@ -28,13 +29,16 @@ struct IG_Homescreen: View {
                             Section {
                                 ScrollView(.horizontal, showsIndicators: false) {
                                     HStack(spacing: 0) {
-                                        ForEach(userviewmodel.users) { user in
-                                            IG_storyview(isLive: user.online,
-                                                         isStoryPosted: .constant(true),
-                                                         user_name: user.name)
-                                                .frame(width: 62, height: 82)
-                                                .padding(.horizontal, 10)
-                                                .padding(.vertical, 15)
+                                        ForEach(userViewModel.users) { user in
+                                            IG_storyview(
+                                                username: user.name,
+                                                isLive : user.live,
+                                                isOnline: true,
+                                                imageURL: user.picture.imageUrl
+                                            )
+                                            .frame(width: 62, height: 82)
+                                            .padding(.horizontal, 10)
+                                            .padding(.vertical, 15)
                                         }
                                     }
                                 }
@@ -47,8 +51,8 @@ struct IG_Homescreen: View {
                             Section {
                                 ScrollView {
                                     LazyVStack {
-                                        ForEach(1...10, id: \.self) { _ in
-                                            IG_postview()
+                                        ForEach(userViewModel.users) { post in
+                                            IG_postview(imageURL: post.picture.imageUrl)
                                             Divider()
                                         }
                                     }
@@ -105,7 +109,7 @@ struct IG_Homescreen: View {
                 }
             }
             .onAppear {
-                userviewmodel.loadUsers()
+                userViewModel.loadUsers()
                 
             }
         }

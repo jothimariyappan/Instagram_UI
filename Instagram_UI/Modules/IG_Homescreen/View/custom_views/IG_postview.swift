@@ -8,19 +8,47 @@
 import SwiftUI
 
 struct IG_postview: View {
+    var imageURL : String
+//    var imagesURL : [String] = []
+    var imagesURL : [String] = ["https://picsum.photos/200/300","https://picsum.photos/200/300",
+                               "https://picsum.photos/200/300"]
     var body: some View {
         ZStack {
             Color.white.ignoresSafeArea()
             VStack(alignment: .center){
                 // Post info -> hstack
-                PostInfoStack(isStoryPosted: .constant(true))
+                PostInfoStack(isStoryPosted: true,imageURL: imageURL)
                 // Post content in center
                 Rectangle()
                     .overlay {
-                        Image("postimage")
-                            .resizable()
-                            .frame(maxWidth: .infinity)
-                            .frame(height: 375)
+                        TabView {
+                                ForEach(imagesURL,id:\.self) { images in
+                                    AsyncImage(url: URL(string: images)) { phase in
+                                        switch phase {
+                                        case .empty:
+                                            ProgressView()
+                                        case .success(let image):
+                                            image
+                                                .resizable()
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 375)
+                                        case .failure(_):
+                                            Image("postimage")
+                                                .resizable()
+                                                .frame(maxWidth: .infinity)
+                                                .frame(height: 375)
+                                        @unknown default:
+                                            EmptyView()
+                                        }
+                                    }
+                                }
+                                
+                            
+                        }
+                        .tabViewStyle(PageTabViewStyle(indexDisplayMode: .automatic))
+
+                        
+                       
                     }
                     .frame(maxWidth: .infinity)
                     .frame(height: 375)
@@ -43,14 +71,15 @@ struct IG_postview: View {
 
 #Preview {
 
-    IG_postview()
+    IG_postview(imageURL: "https://picsum.photos/200/300")
 }
 
 struct PostInfoStack :View {
-    @Binding var isStoryPosted : Bool
+  var isStoryPosted : Bool
+    var imageURL : String
     var body: some View {
         HStack(alignment: .center,spacing: 20) {
-            Profileview(isStoryPosted: $isStoryPosted,size: .medium)
+            Profileview(size: .medium, isOnline: isStoryPosted,imageURL: imageURL)
                 .frame(width:20, height: 20)
             VStack(alignment: .leading,spacing: 0) {
                 HStack {

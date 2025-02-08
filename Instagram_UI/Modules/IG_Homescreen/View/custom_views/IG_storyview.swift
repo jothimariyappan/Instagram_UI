@@ -7,46 +7,43 @@
 
 import SwiftUI
 
-struct IG_StoryModel{
-    let id: Int
-    let islive : Bool
-    let username : String
-    let avatar : String
-}
 
 
 struct IG_storyview: View {
     
-    @State var isLive :Bool = false
-    @Binding var isStoryPosted :Bool
-    @State var user_name : String
+    var username: String
+    var isLive: Bool
+    var isOnline: Bool
+    var imageURL :String
     var body: some View {
         ZStack {
           
-            VStack {
-                Profileview(isStoryPosted: $isStoryPosted,size: .large)
-                if isLive {
-                    Text("Live")
-                        .font(.system(size: 12))
-                        .fontWeight(.semibold)
-                        .foregroundColor(.white)
-                        .padding(.vertical,2)
-                        .padding(.horizontal,2)
-                        .background(
-                            Color.pink
-                                .cornerRadius(5)
-                        )
-                        .padding(.top, -17)
+            VStack(spacing: 10) {
+                ZStack(alignment: .bottom) {
+                    Profileview(size: .large,isOnline: isOnline,imageURL: imageURL)
                     
-                        .overlay( // Overlay for a white border
-                            RoundedRectangle(cornerRadius: 5)
-                                .stroke(Color.white, lineWidth: 2)
-                                .padding(.top, -17)
-                        )
-                    
+                    if isLive {
+                        Text("Live")
+                            .font(.system(size: 12))
+                            .fontWeight(.semibold)
+                            .foregroundColor(.white)
+                            .padding(.vertical,2)
+                            .padding(.horizontal,2)
+                            .background(
+                                Color.pink
+                                    .cornerRadius(5)
+                            )
+                            .padding(.bottom, -8)
+                        
+                            .overlay( // Overlay for a white border
+                                RoundedRectangle(cornerRadius: 5)
+                                    .stroke(Color.white, lineWidth: 2)
+                                    .padding(.bottom, -8)
+                            )
+                        
+                    }
                 }
-                
-                Text(user_name)
+                Text(username)
                     .font(.caption)
                     .frame(maxWidth: 62)
                     .multilineTextAlignment(.center)
@@ -58,32 +55,60 @@ struct IG_storyview: View {
 }
 
 #Preview {
-    IG_storyview(isLive: true,isStoryPosted: .constant(true),user_name: "IG_USER")
+   
+    IG_storyview(username: "jothi", isLive: true, isOnline: true, imageURL: "https://picsum.photos/200/300")
     
-    IG_storyview(isLive: false,isStoryPosted: .constant(false), user_name: "IG_USER")
 }
-
+enum Constants : String {
+    case imageURL = "https://picsum.photos/200/300"
+}
 struct Profileview: View {
-    @Binding var isStoryPosted : Bool
-    var size : ImageSize = .large
-  
+     var size : ImageSize
+     var isOnline : Bool
+    var imageURL : String? = nil
+    
     var body: some View {
-        Image("User_profile_image")
-            .resizable()
-            .frame(width: size.imageSize,height: size.imageSize)
-            .aspectRatio(contentMode: .fit)
-            .overlay {
-                Circle()
-                    .stroke(isStoryPosted ? Color.pink : Color.white,
-                            lineWidth: size.borderWidth)
-                    .frame(width: size.overlaySize,height: size.overlaySize)
+        AsyncImage(url: URL(string: imageURL ?? "https://picsum.photos/200/300")) { phase in
+            switch phase {
+            case .empty:
+                ProgressView()
+                    .frame(width: size.imageSize, height: size.imageSize)
+            case .success(let image):
+                
+                image
+                    .resizable()
+                    .frame(width: size.imageSize,height: size.imageSize)
+                    .aspectRatio(contentMode: .fit)
+                    .clipShape(Circle())
+                    .overlay {
+                        Circle()
+                            .stroke(isOnline ? Color.pink : Color.white,
+                                    lineWidth: size.borderWidth)
+                            .frame(width: size.overlaySize,height: size.overlaySize)
+                    }
+            case .failure(_):
+                Image("fallback_image") // Replace with your fallback image name
+                                 .resizable()
+                                 .frame(width: size.imageSize, height: size.imageSize)
+                                 .aspectRatio(contentMode: .fit)
+                                 .clipShape(Circle())
+                                 .overlay {
+                                     Circle()
+                                         .stroke(isOnline ? Color.pink : Color.white, lineWidth: size.borderWidth)
+                                         .frame(width: size.overlaySize, height: size.overlaySize)
+                                 }
+            @unknown default:
+                EmptyView()
             }
+        }
+     
     }
 }
 enum ImageSize {
     case small
     case medium
     case large
+    case extralarge
     
     var imageSize :CGFloat {
         switch self {
@@ -93,6 +118,8 @@ enum ImageSize {
             return 32
         case .large:
             return 62
+        case .extralarge:
+            return 92
         }
     }
     
